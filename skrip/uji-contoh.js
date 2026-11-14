@@ -1,32 +1,68 @@
-// Menjalankan setiap blok ```python di materi pada MicroPython, runtime yang sama dengan di browser.
-// Tujuannya menangkap contoh yang jalan di CPython tetapi gagal di MicroPython sebelum pelajar menemukannya.
-// Blok yang memang sengaja salah bisa dilewati dengan menulis ```python salah
+// Menguji materi pada MicroPython, runtime yang sama dengan di browser. Dua pemeriksaan:
+//   1. Setiap blok ```python di materi harus berjalan tanpa galat.
+//      Blok yang memang sengaja salah ditulis ```python salah dan harus MENGHASILKAN galat.
+//   2. Setiap latihan harus bisa diselesaikan: `solusi` lulus semua tes, dan `kode_awal` tidak.
+// Penilaian memakai src/js/tes.js, berkas yang sama dengan yang dipakai di browser.
+// Jalankan dengan `npm run uji`; tambahkan `-- --tampil` untuk melihat keluaran setiap contoh.
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import matter from "gray-matter";
 import { loadMicroPython } from "@micropython/micropython-webassembly-pyscript/micropython.mjs";
+import { periksaSemua } from "../src/js/tes.js";
 
 const DIR = "src/pelajaran";
-const POLA = /^```python[ \t]*\n([\s\S]*?)^```/gm;
+const POLA = /^```python([ \t]+salah)?[ \t]*\n([\s\S]*?)^```/gm;
+const TAMPIL = process.argv.includes("--tampil");
 
-let jumlah = 0;
-let gagal = 0;
+// Interpreter baru per program, sama seperti di browser.
+async function jalankan(kode) {
+  const byte = [];
+  const tampung = (b) => byte.push(...b);
+  const mp = await loadMicroPython({ stdout: tampung, stderr: tampung, linebuffer: false });
+  let galat = null;
+  try {
+    mp.runPython(kode);
+  } catch (e) {
+    galat = String(e.message).trim();
+  }
+  return { stdout: new TextDecoder().decode(new Uint8Array(byte)), galat };
+}
+
+const masalah = [];
+let contoh = 0;
+let latihan = 0;
 
 for (const berkas of readdirSync(DIR).filter((n) => n.endsWith(".md")).sort()) {
-  const isi = readFileSync(join(DIR, berkas), "utf8").replace(/\r\n/g, "\n");
+  const { data, content } = matter(readFileSync(join(DIR, berkas), "utf8").replace(/\r\n/g, "\n"));
+
   let nomor = 0;
-  for (const [, kode] of isi.matchAll(POLA)) {
+  for (const [, salah, kode] of content.matchAll(POLA)) {
     nomor += 1;
-    jumlah += 1;
-    // Interpreter baru per contoh, sama seperti di browser.
-    const mp = await loadMicroPython({ stdout: () => {}, stderr: () => {}, linebuffer: false });
-    try {
-      mp.runPython(kode);
-    } catch (e) {
-      gagal += 1;
-      console.log(`GAGAL ${berkas} contoh ke-${nomor}\n${kode.trimEnd()}\n--> ${String(e.message).trim()}\n`);
-    }
+    contoh += 1;
+    const h = await jalankan(kode);
+    if (TAMPIL) console.log(`--- ${berkas} #${nomor}${salah ? " (salah)" : ""}\n${h.stdout}${h.galat ? `[galat] ${h.galat.split("\n").pop()}\n` : ""}`);
+    if (!salah && h.galat) masalah.push(`${berkas} contoh ke-${nomor} gagal:\n${kode.trimEnd()}\n--> ${h.galat}`);
+    if (salah && !h.galat) masalah.push(`${berkas} contoh ke-${nomor} ditandai "salah" tetapi berjalan tanpa galat.`);
+  }
+
+  const l = data.latihan;
+  if (!l) continue;
+  latihan += 1;
+  if (!l.tes?.length) masalah.push(`${berkas}: latihan tidak punya tes.`);
+  if (!l.solusi) {
+    masalah.push(`${berkas}: latihan tidak punya solusi.`);
+    continue;
+  }
+  const nilai = async (kode) => periksaSemua(kode, l.tes, await jalankan(kode), jalankan);
+
+  const gagal = (await nilai(l.solusi)).filter((t) => !t.lulus);
+  for (const t of gagal) masalah.push(`${berkas}: solusi tidak lulus "${t.label}".\n${t.pesan ?? ""}`);
+
+  if ((await nilai(l.kode_awal)).every((t) => t.lulus)) {
+    masalah.push(`${berkas}: kode_awal sudah lulus semua tes, jadi latihannya tidak menguji apa pun.`);
   }
 }
 
-console.log(`${jumlah - gagal} dari ${jumlah} contoh berjalan di MicroPython.`);
-process.exit(gagal ? 1 : 0);
+for (const m of masalah) console.log(`GAGAL ${m}\n`);
+console.log(`${contoh} contoh dan ${latihan} latihan diperiksa pada MicroPython, ${masalah.length} masalah.`);
+process.exit(masalah.length ? 1 : 0);

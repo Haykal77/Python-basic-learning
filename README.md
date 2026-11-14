@@ -30,11 +30,12 @@ src/
   js/daftar-sw.js         mendaftarkan service worker
   sw.njk                  service worker; menjadi /sw.js saat build
   _data/bangun.js         versi build (nama cache) dan penanda mode dev
+  js/tes.js               aturan penilaian latihan (dipakai worker dan `npm run uji`)
   js/pekerja.js           Web Worker: memuat runtime, menjalankan kode dan tes
   index.njk               daftar pelajaran
   pelajaran/*.md          satu berkas per pelajaran
 skrip/cek-ukuran.js       pemeriksa anggaran ukuran
-skrip/uji-contoh.js       penguji contoh kode di materi
+skrip/uji-contoh.js       penguji contoh kode dan latihan di materi
 .github/workflows/        deploy ke GitHub Pages
 ```
 
@@ -51,6 +52,8 @@ latihan:
   perintah: Apa yang harus dikerjakan pelajar (teks polos).
   kode_awal: |
     # kode yang sudah terisi di editor
+  solusi: |
+    # jawaban acuan; tidak ditampilkan di situs, dipakai `npm run uji`
   contoh_keluaran: |
     keluaran yang ditampilkan saat pelajar membuka "Lihat keluaran"
   tes:
@@ -61,7 +64,15 @@ latihan:
 Isi materi dalam Markdown.
 ```
 
-`urutan` menentukan posisi di daftar dan tautan sebelum/sesudah. Blok `latihan` boleh dihilangkan.
+`urutan` menentukan posisi di daftar dan tautan sebelum/sesudah. `roadmap` (opsional) adalah nama topik di roadmap Python roadmap.sh yang dicakup pelajaran itu; ditampilkan di atas judul.
+
+Materi saat ini mengikuti bagian **Learn the Basics** roadmap tersebut: Basic Syntax, Variables and Data Types, Conditionals, Loops, Type Casting, Exceptions, Functions and Builtin Functions, Lists, Tuples, Sets, Dictionaries.
+
+Tiga hal yang perlu diingat saat menulis materi, karena kode dijalankan MicroPython dan bukan CPython:
+
+- Jangan membuat tes yang bergantung pada urutan `dict` atau `set`; pakai `sorted(...)`.
+- Hindari tes pada keluaran bilangan pecahan yang panjang; format `float` bisa berbeda dari CPython.
+- Hindari `{{`, `{%`, dan `{#` di dalam berkas pelajaran: Markdown diproses Nunjucks lebih dulu. Blok `latihan` boleh dihilangkan.
 
 ### Format tes
 
@@ -171,9 +182,14 @@ Dipasang lewat `<meta http-equiv>` di `_includes/dasar.njk`, sehingga berlaku di
 
 Saat kontainer pelajaran lebih sempit dari 56rem, muncul tiga tab: Materi, Kode, Hasil. Menekan Jalankan otomatis berpindah ke Hasil. Di kontainer lebar ketiganya tampil berdampingan dan tab disembunyikan. Tanpa JavaScript tab tidak muncul dan semua bagian tampil berurutan.
 
-### Menguji contoh materi
+### Menguji materi
 
-`npm run uji` menjalankan setiap blok ```` ```python ```` di `src/pelajaran/` pada MicroPython, runtime yang sama dengan di browser, dan gagal bila ada yang melempar galat. CI menjalankannya sebelum build. Jalankan setiap kali menambah atau mengubah pelajaran.
+`npm run uji` memeriksa dua hal pada MicroPython, runtime yang sama dengan di browser:
+
+1. Setiap blok ```` ```python ```` di `src/pelajaran/` berjalan tanpa galat. Blok yang memang sengaja salah ditulis ```` ```python salah ```` dan harus menghasilkan galat.
+2. Setiap latihan bisa diselesaikan: `solusi` lulus semua tes, dan `kode_awal` tidak.
+
+Penilaiannya memakai `src/js/tes.js`, berkas yang sama dengan yang dipakai di browser. CI menjalankannya sebelum build. `npm run uji -- --tampil` menampilkan keluaran setiap contoh, berguna untuk memeriksa bahwa penjelasan di materi cocok dengan hasil sebenarnya.
 
 ## Yang sengaja belum ada
 

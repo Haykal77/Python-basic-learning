@@ -1,11 +1,15 @@
 ---
-judul: Halo, Dunia
+judul: Sintaks dasar
 urutan: 1
-ringkasan: Program pertamamu, dan cara Python menampilkan teks ke layar.
+roadmap: Basic Syntax
+ringkasan: Aturan menulis program Python — baris, komentar, indentasi, dan print.
 latihan:
   perintah: Ubah program di bawah agar mencetak namamu sendiri di baris kedua.
   kode_awal: |
     print("Halo, Dunia!")
+  solusi: |
+    print("Halo, Dunia!")
+    print("Namaku Sari")
   contoh_keluaran: |
     Halo, Dunia!
     Namaku Sari
@@ -16,30 +20,61 @@ latihan:
       harapan: 2
 ---
 
-Program Python dibaca dari atas ke bawah, satu baris setiap kali. Baris paling sederhana yang bisa kamu tulis adalah perintah untuk menampilkan teks.
+Sintaks adalah aturan menulis program agar Python bisa memahaminya. Aturan Python sedikit dan mudah dibaca; pelajaran ini mencakup yang paling dasar.
+
+## Program pertama
 
 ```python
 print("Halo, Dunia!")
 ```
 
-`print` adalah **fungsi**: sebuah perintah yang sudah disediakan Python. Apa pun yang kamu letakkan di dalam tanda kurung akan ditampilkan ke layar.
+`print` adalah **fungsi**: perintah yang sudah disediakan Python. Apa pun di dalam tanda kurung ditampilkan ke layar. Teks di dalam tanda kutip disebut **string**.
 
-Teks di dalam tanda kutip disebut **string**. Tanda kutip memberi tahu Python bahwa isinya adalah teks, bukan perintah.
+## Satu baris, satu perintah
 
-## Lebih dari satu baris
-
-Setiap `print` menghasilkan satu baris keluaran.
+Python menjalankan program dari atas ke bawah, satu baris setiap kali. Tidak perlu titik koma di akhir baris.
 
 ```python
 print("Baris pertama")
 print("Baris kedua")
 ```
 
-## Komentar
-
-Baris yang diawali `#` diabaikan Python. Gunakan untuk meninggalkan catatan bagi dirimu sendiri.
+`print` bisa menerima beberapa nilai sekaligus, dipisahkan koma. Python menyisipkan spasi di antaranya.
 
 ```python
-# Ini tidak dijalankan
-print("Ini dijalankan")
+print("Umur:", 17)
+```
+
+## Komentar
+
+Semua yang ditulis setelah `#` diabaikan Python. Komentar ditujukan untuk manusia yang membaca kodemu.
+
+```python
+# Baris ini tidak dijalankan
+print("Ini dijalankan")  # komentar juga boleh di akhir baris
+```
+
+## Indentasi
+
+Di banyak bahasa lain, spasi di awal baris hanya soal kerapian. Di Python, spasi itu **bagian dari sintaks**: baris yang menjorok ke dalam termasuk ke blok di atasnya. Kesepakatannya empat spasi.
+
+```python
+if True:
+    print("Baris ini ada di dalam if")
+print("Baris ini di luar if")
+```
+
+Indentasi yang tidak pada tempatnya menghasilkan galat:
+
+```python salah
+print("Halo")
+    print("Kenapa menjorok?")
+```
+
+## Huruf besar dan kecil berbeda
+
+`print` dan `Print` adalah dua nama berbeda bagi Python. Hanya yang pertama yang ada.
+
+```python salah
+Print("Halo")
 ```

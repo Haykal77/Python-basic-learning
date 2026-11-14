@@ -1,12 +1,19 @@
 ---
 judul: Percabangan
 urutan: 3
+roadmap: Conditionals
 ringkasan: Membuat program mengambil keputusan dengan if, elif, dan else.
 latihan:
   perintah: Lengkapi program agar mencetak "Lulus" bila nilai 75 atau lebih, dan "Belum lulus" bila kurang dari 75. Programmu diuji dengan beberapa nilai, termasuk tepat 75.
   kode_awal: |
     nilai = 80
     # tulis percabanganmu di sini
+  solusi: |
+    nilai = 80
+    if nilai >= 75:
+        print("Lulus")
+    else:
+        print("Belum lulus")
   contoh_keluaran: |
     Lulus
   tes:

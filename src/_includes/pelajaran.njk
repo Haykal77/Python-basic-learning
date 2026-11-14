@@ -14,7 +14,7 @@ layout: dasar.njk
   {% endif %}
   <div class="pelajaran">
     <article class="materi">
-      <p class="nomor">Pelajaran {{ urutan }}</p>
+      <p class="nomor">Pelajaran {{ urutan }}{% if roadmap %} · Roadmap: {{ roadmap }}{% endif %}</p>
       <h1>{{ judul }}</h1>
       {{ content | safe }}
     </article>
