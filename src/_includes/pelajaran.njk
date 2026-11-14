@@ -4,6 +4,14 @@ layout: dasar.njk
 {% set sebelum = collections.pelajaranUrut | getPreviousCollectionItem %}
 {% set sesudah = collections.pelajaranUrut | getNextCollectionItem %}
 <div class="bungkus-pelajaran">
+  {% if latihan %}
+  {# Tab untuk layar sempit. Dihidupkan oleh js/latihan.js; tanpa skrip, materi dan latihan tampil berurutan. #}
+  <nav class="bilah-tab" aria-label="Bagian pelajaran" data-bilah-tab hidden>
+    <button type="button" data-ke="materi">Materi</button>
+    <button type="button" data-ke="kode">Kode</button>
+    <button type="button" data-ke="hasil">Hasil</button>
+  </nav>
+  {% endif %}
   <div class="pelajaran">
     <article class="materi">
       <p class="nomor">Pelajaran {{ urutan }}</p>
@@ -14,6 +22,7 @@ layout: dasar.njk
     {% if latihan %}
     <section class="latihan" aria-labelledby="judul-latihan" data-latihan data-id="{{ page.fileSlug }}">
       <h2 id="judul-latihan">Latihan</h2>
+      <div data-panel="kode">
       <p>{{ latihan.perintah }}</p>
 
       <label for="kode">Kode kamu</label>
@@ -25,7 +34,11 @@ layout: dasar.njk
         <button type="button" class="tombol" data-jalankan hidden>Jalankan</button>
         <button type="button" class="tombol sekunder" data-atur-ulang hidden>Kembalikan kode awal</button>
       </div>
+      </div>
+
+      <div data-panel="hasil">
       <div class="hasil" role="status" aria-live="polite" data-hasil hidden></div>
+      <p class="status hasil-kosong">Belum ada hasil. Buka tab Kode, lalu tekan Jalankan.</p>
 
       <p class="catatan" data-tanpa-runtime>
         Kode tidak bisa dijalankan di browser ini. Salin ke Python di komputermu, lalu bandingkan keluarannya.
@@ -37,6 +50,7 @@ layout: dasar.njk
         <pre><code>{{ latihan.contoh_keluaran }}</code></pre>
       </details>
       {% endif %}
+      </div>
 
       <script type="application/json" data-tes>{{ latihan.tes | json | safe }}</script>
       <script type="module" src="{{ '/js/latihan.js' | url }}"></script>

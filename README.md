@@ -1,6 +1,6 @@
 # Belajar Python
 
-Situs statis untuk belajar Python, sesuai ADR-001. Sudah mencakup **Fase 1** (materi statis yang terbaca tanpa JavaScript, tata letak cair), **Fase 2** (menjalankan kode pelajar di browser dengan MicroPython di dalam Web Worker), dan **Fase 3** (pemakaian offline, penyimpanan progres dan draf, Content Security Policy).
+Situs statis untuk belajar Python, sesuai ADR-001. Keempat fase sudah selesai: materi statis dengan tata letak cair, menjalankan kode pelajar di browser (MicroPython di dalam Web Worker), ketahanan (offline, progres dan draf, Content Security Policy), dan kenyamanan (editor kode, tab untuk layar sempit).
 
 ## Menjalankan
 
@@ -10,6 +10,7 @@ npm run dev      # server lokal dengan muat ulang otomatis
 npm run build    # hasil ke _site/
 npm run pratinjau # build lalu sajikan _site/ di http://localhost:8081 (dengan service worker)
 npm run ukuran   # periksa anggaran ukuran (jalankan setelah build)
+npm run uji      # jalankan semua contoh kode di materi pada MicroPython
 ```
 
 Butuh Node.js 18 atau lebih baru.
@@ -23,6 +24,7 @@ src/
   _includes/pelajaran.njk tata letak pelajaran: materi + latihan
   css/gaya.css            satu-satunya berkas CSS
   js/latihan.js           halaman: tombol Jalankan, panel hasil, batas waktu
+  editor/editor.js        editor kode (CodeMirror); dibundel esbuild menjadi js/editor.js
   js/progres.js           baca/tulis progres dan draf di localStorage
   js/beranda.js           tanda selesai, ekspor dan impor progres
   js/daftar-sw.js         mendaftarkan service worker
@@ -32,6 +34,7 @@ src/
   index.njk               daftar pelajaran
   pelajaran/*.md          satu berkas per pelajaran
 skrip/cek-ukuran.js       pemeriksa anggaran ukuran
+skrip/uji-contoh.js       penguji contoh kode di materi
 .github/workflows/        deploy ke GitHub Pages
 ```
 
@@ -152,7 +155,26 @@ Dipasang lewat `<meta http-equiv>` di `_includes/dasar.njk`, sehingga berlaku di
 - `'wasm-unsafe-eval'` diperlukan untuk mengompilasi runtime Python; `blob:` di `connect-src` diperlukan karena worker memuat `.wasm` dari salinan di memori.
 - `frame-ancestors` tidak bisa diatur lewat `<meta>`. Bila host mendukung header kustom, tambahkan di sana.
 
+## Kenyamanan (Fase 4)
+
+### Editor kode
+
+`<textarea>` digantikan CodeMirror 6 (nomor baris, warna sintaks, indentasi otomatis empat spasi, Tab untuk indentasi) saat latihan mendekati layar. Bila editor gagal dimuat atau browsernya terlalu lama, `<textarea>` tetap dipakai dan semua fitur lain tetap jalan.
+
+- `src/editor/editor.js` adalah satu-satunya berkas yang dibundel. Eleventy menjalankan esbuild sebelum setiap build; tidak ada perintah tambahan.
+- `js/latihan.js` hanya mengenal empat fungsi editor: `ambil`, `isi`, `fokus`, `segarkan`. Mengganti editor cukup dilakukan di `src/editor/editor.js`.
+- Editor dipasang di dalam **shadow root**. Ini bukan gaya-gayaan: di luar shadow root CodeMirror membuat elemen `<style>`, yang diblokir CSP situs dan membuat tombol Enter tidak berfungsi. Jangan pindahkan editor keluar dari shadow root tanpa mengubah CSP.
+- Karena itu tampilan editor diatur di `src/editor/editor.js` (objek `tema` dan `warnaSintaks`), bukan di `gaya.css`. Warnanya memakai variabel CSS situs (`--tok-kata`, `--latar-kode`, dan lain-lain), jadi mengubah variabel di `gaya.css` tetap mengubah editor.
+- Tab di dalam editor berarti indentasi. Untuk keluar dari editor dengan keyboard: Esc lalu Tab.
+
+### Tab di layar sempit
+
+Saat kontainer pelajaran lebih sempit dari 56rem, muncul tiga tab: Materi, Kode, Hasil. Menekan Jalankan otomatis berpindah ke Hasil. Di kontainer lebar ketiganya tampil berdampingan dan tab disembunyikan. Tanpa JavaScript tab tidak muncul dan semua bagian tampil berurutan.
+
+### Menguji contoh materi
+
+`npm run uji` menjalankan setiap blok ```` ```python ```` di `src/pelajaran/` pada MicroPython, runtime yang sama dengan di browser, dan gagal bila ada yang melempar galat. CI menjalankannya sebelum build. Jalankan setiap kali menambah atau mengubah pelajaran.
+
 ## Yang sengaja belum ada
 
-- Editor CodeMirror dan tab untuk layar sempit (Fase 4).
 - `input()`, dan sinkronisasi progres antar perangkat tanpa berkas.

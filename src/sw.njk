@@ -26,8 +26,8 @@ const INTI = [
 {%- endfor %}
 ];
 
-// Runtime Python: diusahakan, tapi kegagalannya tidak membatalkan instalasi.
-const RUNTIME = ["runtime/micropython.mjs", "runtime/micropython.wasm"];
+// Runtime Python dan editor: diusahakan, tapi kegagalannya tidak membatalkan instalasi.
+const RUNTIME = ["runtime/micropython.mjs", "runtime/micropython.wasm", "js/editor.js"];
 
 // Semua alamat relatif terhadap letak sw.js, sehingga situs boleh di-host di subfolder.
 const mutlak = (jalur) => new URL(jalur, self.location).href;

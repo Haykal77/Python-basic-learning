@@ -26,6 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run uji
       - run: npm run build
         env:
           # Situs proyek GitHub Pages berada di /nama-repo/

@@ -11,6 +11,10 @@
   --aksen: #1f5fbf;
   --latar-kode: #f1eee8;
   --hijau: #1a7f37;
+  --tok-kata: #8250df;
+  --tok-teks: #0a6b3d;
+  --tok-angka: #9a4a00;
+  --tok-komentar: #6e6a63;
   --merah: #b3261e;
 
   --huruf: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
@@ -34,6 +38,10 @@
     --aksen: #8ab4f8;
     --latar-kode: #2a2825;
     --hijau: #6fcf85;
+    --tok-kata: #c4a7ff;
+    --tok-teks: #8fd6a4;
+    --tok-angka: #f0b072;
+    --tok-komentar: #9a958c;
     --merah: #f2867d;
   }
 }
@@ -150,6 +158,33 @@ textarea {
 .catatan { color: var(--teks-redup); font-size: 0.9em; margin: 0.75rem 0; }
 details summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; }
 details pre { margin-bottom: 0; }
+
+/* Editor kode (CodeMirror) hidup di dalam shadow root; tampilannya diatur di src/editor/editor.js
+   memakai variabel warna di atas. Di sini cukup wadahnya. */
+.editor { display: block; }
+
+/* Tab Materi / Kode / Hasil: hanya saat kontainer pelajaran sempit. Di kontainer lebar semuanya tampil sekaligus. */
+.bilah-tab { display: none; }
+.hasil-kosong { display: none; }
+@container (max-width: 55.99rem) {
+  .bilah-tab:not([hidden]) {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem;
+    position: sticky; top: 0; z-index: 1; margin-bottom: 1rem; padding: 0.25rem;
+    background: var(--permukaan); border: 1px solid var(--garis); border-radius: 0.6rem;
+  }
+  .bilah-tab button {
+    min-height: 2.75rem; font: inherit; color: var(--teks-redup);
+    background: transparent; border: 0; border-radius: 0.4rem; cursor: pointer;
+  }
+  .bilah-tab button[aria-current="true"] { color: var(--permukaan); background: var(--aksen); font-weight: 600; }
+
+  .pelajaran[data-tab="materi"] .latihan,
+  .pelajaran[data-tab="kode"] .materi,
+  .pelajaran[data-tab="kode"] [data-panel="hasil"],
+  .pelajaran[data-tab="hasil"] .materi,
+  .pelajaran[data-tab="hasil"] [data-panel="kode"] { display: none; }
+  .pelajaran[data-tab="hasil"] .hasil[hidden] + .hasil-kosong { display: block; }
+}
 
 /* Tabel lebar digulir di dalam dirinya sendiri agar halaman tidak ikut bergeser. */
 table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 0 0 1rem; }

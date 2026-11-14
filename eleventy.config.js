@@ -1,8 +1,24 @@
+import * as esbuild from "esbuild";
+
 // Konfigurasi Eleventy. Situs ini sengaja tanpa plugin: Markdown masuk, HTML statis keluar.
 export default function (eleventyConfig) {
   // CSS dan JS disalin apa adanya; tidak ada bundler.
   eleventyConfig.addPassthroughCopy({ "src/css": "css" });
   eleventyConfig.addPassthroughCopy({ "src/js": "js" });
+
+  // Satu-satunya berkas yang dibundel: editor kode (CodeMirror terdiri dari banyak modul).
+  // Hasilnya js/editor.js, dimuat belakangan oleh js/latihan.js.
+  eleventyConfig.addWatchTarget("src/editor/");
+  eleventyConfig.on("eleventy.before", async ({ directories }) => {
+    await esbuild.build({
+      entryPoints: ["src/editor/editor.js"],
+      bundle: true,
+      format: "esm",
+      minify: true,
+      target: "es2020",
+      outfile: `${directories.output}js/editor.js`,
+    });
+  });
 
   // Runtime Python di-host di origin sendiri (bukan CDN pihak ketiga): hanya dua berkas ini yang dipakai.
   const mp = "node_modules/@micropython/micropython-webassembly-pyscript";

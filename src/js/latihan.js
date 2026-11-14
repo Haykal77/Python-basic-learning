@@ -1,4 +1,5 @@
-// Menghidupkan latihan: tombol Jalankan, panel hasil, penjaga batas waktu, dan penyimpanan draf.
+// Menghidupkan latihan: tombol Jalankan, panel hasil, penjaga batas waktu, penyimpanan draf,
+// editor kode, dan tab untuk layar sempit.
 // Tanpa berkas ini halaman tetap utuh; tombol hanya muncul bila skrip ini berhasil jalan.
 import { baca, ubah } from "./progres.js";
 
@@ -20,6 +21,16 @@ function pasang(akar) {
   let pekerja = null;
   let pewaktu = null;
 
+  // Kode dibaca dan ditulis lewat tiga fungsi ini saja. Awalnya sumbernya <textarea>;
+  // bila editor berhasil dimuat, sumbernya berpindah ke editor tanpa mengubah kode lain di berkas ini.
+  let editor = null;
+  const ambilKode = () => (editor ? editor.ambil() : kotakKode.value);
+  const isiKode = (teks) => {
+    kotakKode.value = teks;
+    editor?.isi(teks);
+  };
+  const fokusKode = () => (editor ? editor.fokus() : kotakKode.focus());
+
   // Draf: kode terakhir pelajar dipulihkan saat halaman dibuka lagi, dan disimpan sesaat setelah ia berhenti mengetik.
   const kodeAwal = kotakKode.defaultValue;
   const draf = baca().pelajaran[id]?.kode;
@@ -29,20 +40,22 @@ function pasang(akar) {
   const simpanDraf = () => {
     clearTimeout(penunda);
     // Kode yang sama dengan kode awal tidak perlu disimpan.
-    ubah(id, { kode: kotakKode.value === kodeAwal ? undefined : kotakKode.value });
-    aturUlang.hidden = kotakKode.value === kodeAwal;
+    const kode = ambilKode();
+    ubah(id, { kode: kode === kodeAwal ? undefined : kode });
+    aturUlang.hidden = kode === kodeAwal;
   };
-  kotakKode.addEventListener("input", () => {
+  const saatBerubah = () => {
     clearTimeout(penunda);
     penunda = setTimeout(simpanDraf, 400);
-  });
+  };
+  kotakKode.addEventListener("input", saatBerubah);
   addEventListener("pagehide", () => penunda && simpanDraf());
 
   aturUlang.hidden = kotakKode.value === kodeAwal;
   aturUlang.addEventListener("click", () => {
-    kotakKode.value = kodeAwal;
+    isiKode(kodeAwal);
     simpanDraf();
-    kotakKode.focus();
+    fokusKode();
   });
 
   tombol.hidden = false;
@@ -105,7 +118,8 @@ function pasang(akar) {
     tombol.textContent = "Berjalan…";
     tulisStatus("Memuat Python…");
     simpanDraf();
-    siapkan().postMessage({ kode: kotakKode.value, tes });
+    pindahTab("hasil");
+    siapkan().postMessage({ kode: ambilKode(), tes });
   };
 
   function tulisStatus(teks, kelas) {
@@ -135,6 +149,49 @@ function pasang(akar) {
     }
     hasil.hidden = false;
     hasil.replaceChildren(...isi);
+  }
+
+  // Tab Materi / Kode / Hasil. Bilah tab hanya terlihat saat kontainer sempit (diatur CSS);
+  // di layar lebar ketiganya tampil berdampingan dan atribut data-tab tidak berpengaruh.
+  const pelajaran = document.querySelector(".pelajaran");
+  const bilahTab = document.querySelector("[data-bilah-tab]");
+  function pindahTab(nama) {
+    if (!bilahTab) return;
+    pelajaran.dataset.tab = nama;
+    for (const t of bilahTab.querySelectorAll("[data-ke]")) {
+      t.setAttribute("aria-current", String(t.dataset.ke === nama));
+    }
+    editor?.segarkan();
+  }
+  if (bilahTab) {
+    bilahTab.hidden = false;
+    pindahTab("materi");
+    bilahTab.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-ke]");
+      if (!t) return;
+      pindahTab(t.dataset.ke);
+      bilahTab.parentElement.scrollIntoView({ block: "start" });
+    });
+  }
+
+  // Editor (CodeMirror) diunduh saat latihan mendekati layar. Bila gagal, <textarea> tetap dipakai.
+  // Editor butuh shadow DOM dan adoptedStyleSheets agar gayanya lolos CSP situs (lihat src/editor/editor.js);
+  // di browser lama yang tidak punya keduanya, editor tidak dimuat sama sekali.
+  if ("IntersectionObserver" in window && "attachShadow" in Element.prototype && "adoptedStyleSheets" in document) {
+    const pengamat = new IntersectionObserver(
+      async (entri) => {
+        if (!entri.some((e) => e.isIntersecting)) return;
+        pengamat.disconnect();
+        try {
+          const { pasangEditor } = await import("./editor.js");
+          editor = pasangEditor(kotakKode, { saatBerubah, saatJalankan: jalankan });
+        } catch {
+          editor = null;
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    pengamat.observe(akar);
   }
 
   tombol.addEventListener("click", jalankan);
