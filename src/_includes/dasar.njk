@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self' blob:; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="color-scheme" content="light dark">
+  <title>{% if judul %}{{ judul }} · {% endif %}{{ situs.nama }}</title>
+  <meta name="description" content="{{ ringkasan or situs.deskripsi }}">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="{{ '/css/gaya.css' | url }}">
+</head>
+<body>
+  <a class="lompat" href="#isi">Lompat ke isi</a>
+  <header class="kepala">
+    <a class="merek" href="{{ '/' | url }}">{{ situs.nama }}</a>
+    <nav aria-label="Utama">
+      <a href="{{ '/' | url }}">Daftar pelajaran</a>
+    </nav>
+  </header>
+  <main id="isi">
+    {{ content | safe }}
+  </main>
+  <footer class="kaki">
+    <p>{{ situs.nama }} · materi bebas dibaca tanpa akun.</p>
+  </footer>
+  {%- if not bangun.dev %}
+  <script type="module" src="{{ '/js/daftar-sw.js' | url }}"></script>
+  {%- endif %}
+</body>
+</html>

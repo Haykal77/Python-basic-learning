@@ -1,0 +1,51 @@
+---
+layout: dasar.njk
+---
+{% set sebelum = collections.pelajaranUrut | getPreviousCollectionItem %}
+{% set sesudah = collections.pelajaranUrut | getNextCollectionItem %}
+<div class="bungkus-pelajaran">
+  <div class="pelajaran">
+    <article class="materi">
+      <p class="nomor">Pelajaran {{ urutan }}</p>
+      <h1>{{ judul }}</h1>
+      {{ content | safe }}
+    </article>
+
+    {% if latihan %}
+    <section class="latihan" aria-labelledby="judul-latihan" data-latihan data-id="{{ page.fileSlug }}">
+      <h2 id="judul-latihan">Latihan</h2>
+      <p>{{ latihan.perintah }}</p>
+
+      <label for="kode">Kode kamu</label>
+      <textarea id="kode" name="kode" rows="8" spellcheck="false" autocapitalize="off"
+        autocomplete="off" autocorrect="off" data-kode>{{ latihan.kode_awal }}</textarea>
+
+      {# Tombol dan panel hasil dihidupkan oleh js/latihan.js. Tanpa skrip, keduanya tetap tersembunyi. #}
+      <div class="baris-tombol">
+        <button type="button" class="tombol" data-jalankan hidden>Jalankan</button>
+        <button type="button" class="tombol sekunder" data-atur-ulang hidden>Kembalikan kode awal</button>
+      </div>
+      <div class="hasil" role="status" aria-live="polite" data-hasil hidden></div>
+
+      <p class="catatan" data-tanpa-runtime>
+        Kode tidak bisa dijalankan di browser ini. Salin ke Python di komputermu, lalu bandingkan keluarannya.
+      </p>
+
+      {% if latihan.contoh_keluaran %}
+      <details>
+        <summary>Lihat keluaran yang diharapkan</summary>
+        <pre><code>{{ latihan.contoh_keluaran }}</code></pre>
+      </details>
+      {% endif %}
+
+      <script type="application/json" data-tes>{{ latihan.tes | json | safe }}</script>
+      <script type="module" src="{{ '/js/latihan.js' | url }}"></script>
+    </section>
+    {% endif %}
+  </div>
+
+  <nav class="langkah" aria-label="Pelajaran sebelum dan sesudah">
+    {% if sebelum %}<a rel="prev" href="{{ sebelum.url | url }}">← {{ sebelum.data.judul }}</a>{% else %}<span></span>{% endif %}
+    {% if sesudah %}<a rel="next" href="{{ sesudah.url | url }}">{{ sesudah.data.judul }} →</a>{% endif %}
+  </nav>
+</div>

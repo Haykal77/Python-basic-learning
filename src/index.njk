@@ -1,0 +1,32 @@
+---
+layout: dasar.njk
+---
+<div class="beranda">
+  <h1>{{ situs.nama }}</h1>
+  <p class="pembuka">{{ situs.deskripsi }}</p>
+  <p class="progres" role="status" data-progres hidden></p>
+
+  <ol class="daftar-pelajaran">
+    {% for p in collections.pelajaranUrut %}
+    <li>
+      <a href="{{ p.url | url }}"{% if p.data.latihan %} data-id="{{ p.fileSlug }}"{% endif %}>
+        <span class="judul-kartu">{{ p.data.judul }}</span>
+        <span class="ringkasan-kartu">{{ p.data.ringkasan }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+
+  {# Dihidupkan oleh js/beranda.js; tanpa skrip bagian ini tetap tersembunyi. #}
+  <details class="kelola" data-kelola hidden>
+    <summary>Simpan atau pindahkan progres</summary>
+    <p>Progres dan draf kodemu hanya tersimpan di browser ini. Unduh sebagai berkas untuk cadangan, atau untuk dimuat di perangkat lain.</p>
+    <div class="baris-tombol">
+      <button type="button" class="tombol sekunder" data-ekspor>Unduh progres</button>
+      <button type="button" class="tombol sekunder" data-impor>Muat dari berkas</button>
+    </div>
+    <input type="file" accept=".json,application/json" data-berkas hidden>
+    <p class="status" role="status" data-pesan></p>
+  </details>
+</div>
+<script type="module" src="{{ '/js/beranda.js' | url }}"></script>

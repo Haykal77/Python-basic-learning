@@ -1,0 +1,72 @@
+---
+permalink: sw.js
+eleventyExcludeFromCollections: true
+---
+// Service worker: membuat situs bisa dipakai tanpa koneksi.
+// Berkas ini dibuat saat build dari src/sw.njk; daftar di bawah diisi otomatis.
+//
+// Strategi: cache dulu, jaringan bila belum ada. Setiap build punya nama cache sendiri,
+// jadi deploy baru = cache baru, dan cache lama dihapus saat service worker baru aktif.
+// Akibatnya, setelah deploy pengunjung lama melihat versi baru pada kunjungan berikutnya, bukan seketika.
+const VERSI = "{{ bangun.versi }}";
+const AWALAN = "belajar-python-";
+const CACHE = AWALAN + VERSI;
+
+// Wajib ada agar situs bisa dibuka offline. Bila satu saja gagal diunduh, instalasi diulang lain waktu.
+const INTI = [
+  "./",
+  "css/gaya.css",
+  "js/latihan.js",
+  "js/pekerja.js",
+  "js/progres.js",
+  "js/beranda.js",
+  "js/daftar-sw.js",
+{%- for p in collections.pelajaranUrut %}
+  "{{ p.url.slice(1) }}",
+{%- endfor %}
+];
+
+// Runtime Python: diusahakan, tapi kegagalannya tidak membatalkan instalasi.
+const RUNTIME = ["runtime/micropython.mjs", "runtime/micropython.wasm"];
+
+// Semua alamat relatif terhadap letak sw.js, sehingga situs boleh di-host di subfolder.
+const mutlak = (jalur) => new URL(jalur, self.location).href;
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await cache.addAll(INTI.map(mutlak));
+      await cache.addAll(RUNTIME.map(mutlak)).catch(() => {});
+      await self.skipWaiting();
+    })()
+  );
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    (async () => {
+      const nama = await caches.keys();
+      await Promise.all(nama.filter((n) => n.startsWith(AWALAN) && n !== CACHE).map((n) => caches.delete(n)));
+      await self.clients.claim();
+    })()
+  );
+});
+
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  // Hanya GET ke origin sendiri yang diurus; sisanya dibiarkan lewat seperti biasa.
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+
+  e.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      const tersimpan = await cache.match(req, { ignoreSearch: true });
+      if (tersimpan) return tersimpan;
+
+      const res = await fetch(req); // bila offline dan tidak ada di cache, browser menampilkan galat jaringannya sendiri
+      if (res.ok && res.type === "basic") cache.put(req, res.clone()).catch(() => {});
+      return res;
+    })()
+  );
+});
