@@ -73,6 +73,7 @@ a { color: var(--aksen); text-underline-offset: 0.15em; }
   border-bottom: 1px solid var(--garis);
 }
 .merek { font-weight: 700; color: inherit; text-decoration: none; }
+.kepala nav { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
 .kepala a { display: inline-flex; align-items: center; min-height: 2.75rem; } /* target sentuh 44 px */
 .kaki { border-top: 1px solid var(--garis); color: var(--teks-redup); font-size: 0.875rem; }
 .kaki p { margin: 0; }
@@ -87,16 +88,53 @@ p { margin: 0 0 1rem; }
 .beranda { max-width: var(--lebar-baca); margin-inline: auto; }
 .pembuka { color: var(--teks-redup); }
 .daftar-pelajaran { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 0.75rem; counter-reset: pel; }
-.daftar-pelajaran a {
+.daftar-pelajaran .kartu {
   display: grid; gap: 0.15rem; padding: 1rem 1.25rem;
   background: var(--permukaan); border: 1px solid var(--garis); border-radius: 0.6rem;
   color: inherit; text-decoration: none;
 }
-.daftar-pelajaran a:hover { border-color: var(--aksen); }
+.daftar-pelajaran a.kartu[href]:hover { border-color: var(--aksen); }
 .judul-kartu { font-weight: 650; }
 .judul-kartu::before { counter-increment: pel; content: counter(pel) ". "; color: var(--teks-redup); }
 .ringkasan-kartu { color: var(--teks-redup); font-size: 0.95em; }
-.daftar-pelajaran a[data-selesai] .judul-kartu::after { content: " ✓"; color: var(--hijau); }
+.kartu[data-selesai] .judul-kartu::after { content: " ✓"; color: var(--hijau); }
+
+/* Kelompok di beranda: materi dasar, tantangan, materi lanjutan. */
+.kelompok { margin-top: 2.5rem; }
+.kelompok h2 { margin-top: 0; }
+.tingkat { margin-top: 1.5rem; }
+.tingkat h3 { font-size: 1.05rem; margin: 0 0 0.25rem; }
+.tingkat .daftar-pelajaran { margin-top: 0.5rem; }
+.tingkat .status { margin: 0; }
+.kartu[data-terkunci] { opacity: 0.55; cursor: not-allowed; }
+.akan-datang .kartu { opacity: 0.75; border-style: dashed; }
+.akan-datang .judul-kartu::before { content: none; }
+
+/* Lencana kecil: Akan Datang, Terkunci, Terbuka, Selesai. */
+.lencana {
+  display: inline-block; margin-left: 0.4rem; padding: 0.05rem 0.55rem; vertical-align: 0.1em;
+  font-size: 0.75rem; font-weight: 600; line-height: 1.6; letter-spacing: 0.02em;
+  color: var(--teks-redup); border: 1px solid var(--garis); border-radius: 999px;
+}
+.lencana.terbuka { color: var(--aksen); border-color: var(--aksen); }
+.lencana.tuntas { color: var(--hijau); border-color: var(--hijau); }
+
+/* Kotak keluaran di bawah setiap contoh kode di materi (diisi saat build, lihat eleventy.config.js). */
+pre:has(+ .keluaran-contoh) { margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.keluaran-contoh {
+  margin: 0 0 1rem; padding: 0.55rem 1rem 0.7rem;
+  background: var(--permukaan); border: 1px solid var(--garis); border-top: 0;
+  border-left: 0.25rem solid var(--aksen); border-radius: 0 0 0.5rem 0.5rem;
+}
+.keluaran-contoh.galat { border-left-color: var(--merah); }
+.label-keluaran { margin: 0 0 0.2rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--teks-redup); }
+.keluaran-contoh pre { margin: 0; padding: 0; background: none; border-radius: 0; }
+.keluaran-contoh.galat code { color: var(--merah); }
+
+/* Halaman tantangan. */
+.gerbang { max-width: var(--lebar-baca); }
+.gerbang ul { margin: 0 0 1rem; }
+.petunjuk { margin-top: 1.5rem; }
 .progres { color: var(--teks-redup); font-size: 0.95em; margin: 0; }
 .kelola { margin-top: 2rem; color: var(--teks-redup); font-size: 0.95em; }
 .kelola p { margin: 0.5rem 0 0; }

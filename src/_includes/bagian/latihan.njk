@@ -1,0 +1,38 @@
+{# Bagian latihan, dipakai halaman pelajaran dan tantangan. Butuh variabel `latihan` dan `idProgres`. #}
+    {% if latihan %}
+    <section class="latihan" aria-labelledby="judul-latihan" data-latihan data-id="{{ idProgres }}">
+      <h2 id="judul-latihan">Latihan</h2>
+      <div data-panel="kode">
+      <p>{{ latihan.perintah | mdInline | safe }}</p>
+
+      <label for="kode">Kode kamu</label>
+      <textarea id="kode" name="kode" rows="8" spellcheck="false" autocapitalize="off"
+        autocomplete="off" autocorrect="off" data-kode>{{ latihan.kode_awal }}</textarea>
+
+      {# Tombol dan panel hasil dihidupkan oleh js/latihan.js. Tanpa skrip, keduanya tetap tersembunyi. #}
+      <div class="baris-tombol">
+        <button type="button" class="tombol" data-jalankan hidden>Jalankan</button>
+        <button type="button" class="tombol sekunder" data-atur-ulang hidden>Kembalikan kode awal</button>
+      </div>
+      </div>
+
+      <div data-panel="hasil">
+      <div class="hasil" role="status" aria-live="polite" data-hasil hidden></div>
+      <p class="status hasil-kosong">Belum ada hasil. Buka tab Kode, lalu tekan Jalankan.</p>
+
+      <p class="catatan" data-tanpa-runtime>
+        Kode tidak bisa dijalankan di browser ini. Salin ke Python di komputermu, lalu bandingkan keluarannya.
+      </p>
+
+      {% if latihan.contoh_keluaran %}
+      <details>
+        <summary>Lihat keluaran yang diharapkan</summary>
+        <pre><code>{{ latihan.contoh_keluaran }}</code></pre>
+      </details>
+      {% endif %}
+      </div>
+
+      <script type="application/json" data-tes>{{ latihan.tes | json | safe }}</script>
+      <script type="module" src="{{ '/js/latihan.js' | url }}"></script>
+    </section>
+    {% endif %}

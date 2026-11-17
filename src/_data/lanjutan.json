@@ -1,0 +1,12 @@
+{
+  "judul": "Struktur Data dan Algoritma",
+  "deskripsi": "Bagian berikutnya pada roadmap Python. Materinya sedang disiapkan.",
+  "topik": [
+    { "judul": "Array dan Linked List", "roadmap": "Arrays and Linked Lists" },
+    { "judul": "Hash Table", "roadmap": "Hash Tables" },
+    { "judul": "Heap, Stack, dan Queue", "roadmap": "Heaps, Stacks and Queues" },
+    { "judul": "Binary Search Tree", "roadmap": "Binary Search Tree" },
+    { "judul": "Rekursi", "roadmap": "Recursion" },
+    { "judul": "Algoritma Pengurutan", "roadmap": "Sorting Algorithms" }
+  ]
+}

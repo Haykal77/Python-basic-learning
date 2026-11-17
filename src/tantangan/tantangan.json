@@ -1,0 +1,5 @@
+{
+  "layout": "tantangan.njk",
+  "tags": "tantangan",
+  "permalink": "tantangan/{{ page.fileSlug }}/"
+}

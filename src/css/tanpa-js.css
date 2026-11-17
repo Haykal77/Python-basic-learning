@@ -1,0 +1,5 @@
+/* Dimuat hanya bila JavaScript mati (lewat <noscript> di _includes/dasar.njk).
+   Tanpa JavaScript gerbang tantangan tidak bisa diperiksa dan kode tidak bisa dijalankan,
+   jadi soal tantangan ditampilkan apa adanya agar tetap bisa dibaca dan dikerjakan di komputer sendiri. */
+[data-gerbang] { display: none !important; }
+[data-isi-tantangan][hidden] { display: block !important; }

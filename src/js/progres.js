@@ -3,7 +3,9 @@
 // situs tetap jalan dan hanya kehilangan fitur mengingat.
 //
 // Bentuk data (versi 1):
-//   { versi: 1, pelajaran: { "<id>": { selesai?: true, kode?: "..." } } }
+//   { versi: 1, bebas?: true, pelajaran: { "<id>": { selesai?: true, kode?: "..." } } }
+// `pelajaran` memuat pelajaran dan tantangan (id tantangan berawalan "tantangan-").
+// `bebas` dicatat saat semua tantangan pernah selesai; sejak itu semua tantangan terbuka tanpa syarat.
 const KUNCI = "belajar-python:progres";
 const VERSI = 1;
 const BATAS_KODE = 20000; // karakter per draf
@@ -16,6 +18,7 @@ const kosong = () => ({ versi: VERSI, pelajaran: {} });
 function rapikan(d) {
   if (!d || typeof d !== "object" || !d.pelajaran || typeof d.pelajaran !== "object") return kosong();
   const hasil = kosong();
+  if (d.bebas === true) hasil.bebas = true;
   for (const [id, p] of Object.entries(d.pelajaran)) {
     if (!ID_SAH.test(id) || !p || typeof p !== "object") continue;
     const bersih = {};
@@ -54,11 +57,44 @@ export function ubah(id, perubahan) {
   return simpan(rapikan(d));
 }
 
+export function tandaiBebas() {
+  const d = baca();
+  if (d.bebas) return true;
+  d.bebas = true;
+  return simpan(d);
+}
+
+// Menentukan tantangan mana yang terbuka. `peta` dibuat saat build (filter petaTantangan di eleventy.config.js):
+//   { dasar: [butir], tingkat: [{ nama, item: [butir] }] }   dengan butir = { id, judul, ringkasan, url }
+// Aturan:
+//   - Tingkat pertama terbuka setelah semua latihan materi dasar selesai.
+//   - Tingkat berikutnya terbuka setelah semua tantangan di tingkat-tingkat sebelumnya selesai.
+//   - Setelah semua tantangan pernah selesai (`bebas`), semuanya terbuka tanpa syarat, selamanya.
+// Materi pelajaran sendiri tidak pernah dikunci.
+export function statusTantangan(peta, data = baca()) {
+  const selesai = (id) => data.pelajaran[id]?.selesai === true;
+  const semua = peta.tingkat.flatMap((t) => t.item);
+  const semuaTuntas = semua.length > 0 && semua.every((x) => selesai(x.id));
+  const bebas = data.bebas === true || semuaTuntas;
+  const dasarBelum = peta.dasar.filter((x) => !selesai(x.id));
+
+  let penghalang = dasarBelum.length ? { jenis: "dasar", belum: dasarBelum } : null;
+  const tingkat = peta.tingkat.map((t) => {
+    const belum = t.item.filter((x) => !selesai(x.id));
+    const status = { nama: t.nama, terbuka: bebas || !penghalang, tuntas: belum.length === 0, belum, alasan: bebas ? null : penghalang };
+    // Tingkat yang belum tuntas menghalangi semua tingkat sesudahnya (kecuali sudah ada penghalang lebih awal).
+    if (!penghalang && belum.length) penghalang = { jenis: "tingkat", nama: t.nama, belum };
+    return status;
+  });
+
+  return { bebas, semuaTuntas, dasarBelum, tingkat };
+}
+
 export function ekspor() {
   return JSON.stringify(baca(), null, 2);
 }
 
-// Menggabungkan berkas ekspor ke data yang ada: "selesai" tidak pernah hilang, draf dari berkas menang.
+// Menggabungkan berkas ekspor ke data yang ada: "selesai" dan "bebas" tidak pernah hilang, draf dari berkas menang.
 export function impor(teks) {
   let masuk;
   try {
@@ -77,6 +113,7 @@ export function impor(teks) {
   for (const [id, p] of Object.entries(baru.pelajaran)) {
     d.pelajaran[id] = { ...d.pelajaran[id], ...p };
   }
+  if (baru.bebas) d.bebas = true;
   if (!simpan(d)) return { ok: false, pesan: "Progres tidak bisa disimpan di browser ini." };
   return { ok: true, jumlah: Object.keys(baru.pelajaran).length };
 }

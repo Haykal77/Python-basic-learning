@@ -19,10 +19,14 @@ const INTI = [
   "js/latihan.js",
   "js/pekerja.js",
   "js/tes.js",
+  "js/gerbang.js",
   "js/progres.js",
   "js/beranda.js",
   "js/daftar-sw.js",
 {%- for p in collections.pelajaranUrut %}
+  "{{ p.url.slice(1) }}",
+{%- endfor %}
+{%- for p in collections.tantanganUrut %}
   "{{ p.url.slice(1) }}",
 {%- endfor %}
 ];

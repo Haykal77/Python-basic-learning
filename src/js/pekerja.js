@@ -6,7 +6,7 @@
 //           { jenis: "gagal-muat" }                               runtime tidak bisa diunduh atau dimuat
 // Halaman tidak tahu runtime apa yang dipakai, jadi runtime bisa diganti tanpa menyentuh halaman.
 import { loadMicroPython } from "../runtime/micropython.mjs";
-import { periksaSemua } from "./tes.js";
+import { periksaSemua, rapikanGalat } from "./tes.js";
 
 const BATAS_KELUARAN = 10000; // byte; sisanya dibuang agar halaman tidak macet
 
@@ -51,19 +51,9 @@ async function jalankan(kode) {
     mp.runPython(PEMBUKA);
     mp.runPython(kode);
   } catch (e) {
-    galat = rapikanGalat(e);
+    galat = rapikanGalat(e?.message ?? e);
   }
   return { stdout: new TextDecoder().decode(new Uint8Array(byte)), terpotong, galat };
-}
-
-// Traceback MicroPython menyebut berkas "<stdin>"; bagi pemula "kodemu" lebih jelas.
-function rapikanGalat(e) {
-  const teks = String(e?.message ?? e).trim();
-  return teks
-    .split("\n")
-    .filter((baris) => !/, in input$/.test(baris)) // bingkai milik PEMBUKA, bukan kode pelajar
-    .join("\n")
-    .replace(/File "<stdin>", line (\d+)(, in <module>)?/g, "Baris $1 di kodemu");
 }
 
 self.onmessage = async ({ data }) => {

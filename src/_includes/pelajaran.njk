@@ -1,17 +1,11 @@
 ---
 layout: dasar.njk
 ---
+{% set idProgres = page.fileSlug %}
 {% set sebelum = collections.pelajaranUrut | getPreviousCollectionItem %}
 {% set sesudah = collections.pelajaranUrut | getNextCollectionItem %}
 <div class="bungkus-pelajaran">
-  {% if latihan %}
-  {# Tab untuk layar sempit. Dihidupkan oleh js/latihan.js; tanpa skrip, materi dan latihan tampil berurutan. #}
-  <nav class="bilah-tab" aria-label="Bagian pelajaran" data-bilah-tab hidden>
-    <button type="button" data-ke="materi">Materi</button>
-    <button type="button" data-ke="kode">Kode</button>
-    <button type="button" data-ke="hasil">Hasil</button>
-  </nav>
-  {% endif %}
+  {% include "bagian/bilah-tab.njk" %}
   <div class="pelajaran">
     <article class="materi">
       <p class="nomor">Pelajaran {{ urutan }}{% if roadmap %} · Roadmap: {{ roadmap }}{% endif %}</p>
@@ -19,47 +13,11 @@ layout: dasar.njk
       {{ content | safe }}
     </article>
 
-    {% if latihan %}
-    <section class="latihan" aria-labelledby="judul-latihan" data-latihan data-id="{{ page.fileSlug }}">
-      <h2 id="judul-latihan">Latihan</h2>
-      <div data-panel="kode">
-      <p>{{ latihan.perintah }}</p>
-
-      <label for="kode">Kode kamu</label>
-      <textarea id="kode" name="kode" rows="8" spellcheck="false" autocapitalize="off"
-        autocomplete="off" autocorrect="off" data-kode>{{ latihan.kode_awal }}</textarea>
-
-      {# Tombol dan panel hasil dihidupkan oleh js/latihan.js. Tanpa skrip, keduanya tetap tersembunyi. #}
-      <div class="baris-tombol">
-        <button type="button" class="tombol" data-jalankan hidden>Jalankan</button>
-        <button type="button" class="tombol sekunder" data-atur-ulang hidden>Kembalikan kode awal</button>
-      </div>
-      </div>
-
-      <div data-panel="hasil">
-      <div class="hasil" role="status" aria-live="polite" data-hasil hidden></div>
-      <p class="status hasil-kosong">Belum ada hasil. Buka tab Kode, lalu tekan Jalankan.</p>
-
-      <p class="catatan" data-tanpa-runtime>
-        Kode tidak bisa dijalankan di browser ini. Salin ke Python di komputermu, lalu bandingkan keluarannya.
-      </p>
-
-      {% if latihan.contoh_keluaran %}
-      <details>
-        <summary>Lihat keluaran yang diharapkan</summary>
-        <pre><code>{{ latihan.contoh_keluaran }}</code></pre>
-      </details>
-      {% endif %}
-      </div>
-
-      <script type="application/json" data-tes>{{ latihan.tes | json | safe }}</script>
-      <script type="module" src="{{ '/js/latihan.js' | url }}"></script>
-    </section>
-    {% endif %}
+    {% include "bagian/latihan.njk" %}
   </div>
 
   <nav class="langkah" aria-label="Pelajaran sebelum dan sesudah">
     {% if sebelum %}<a rel="prev" href="{{ sebelum.url | url }}">← {{ sebelum.data.judul }}</a>{% else %}<span></span>{% endif %}
-    {% if sesudah %}<a rel="next" href="{{ sesudah.url | url }}">{{ sesudah.data.judul }} →</a>{% endif %}
+    {% if sesudah %}<a rel="next" href="{{ sesudah.url | url }}">{{ sesudah.data.judul }} →</a>{% else %}<a href="{{ '/' | url }}#tantangan">Tantangan →</a>{% endif %}
   </nav>
 </div>

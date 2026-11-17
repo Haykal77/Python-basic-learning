@@ -9,6 +9,7 @@
   <meta name="description" content="{{ ringkasan or situs.deskripsi }}">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="{{ '/css/gaya.css' | url }}">
+  <noscript><link rel="stylesheet" href="{{ '/css/tanpa-js.css' | url }}"></noscript>
 </head>
 <body>
   <a class="lompat" href="#isi">Lompat ke isi</a>
@@ -16,6 +17,7 @@
     <a class="merek" href="{{ '/' | url }}">{{ situs.nama }}</a>
     <nav aria-label="Utama">
       <a href="{{ '/' | url }}">Daftar pelajaran</a>
+      <a href="{{ '/' | url }}#tantangan">Tantangan</a>
     </nav>
   </header>
   <main id="isi">

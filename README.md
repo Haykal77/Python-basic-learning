@@ -1,6 +1,6 @@
 # Belajar Python
 
-Situs statis untuk belajar Python, sesuai ADR-001. Keempat fase sudah selesai: materi statis dengan tata letak cair, menjalankan kode pelajar di browser (MicroPython di dalam Web Worker), ketahanan (offline, progres dan draf, Content Security Policy), dan kenyamanan (editor kode, tab untuk layar sempit).
+Situs statis untuk belajar Python, sesuai ADR-001. Isinya sebelas pelajaran dasar yang mengikuti bagian *Learn the Basics* roadmap Python dari roadmap.sh, sepuluh tantangan dalam lima tingkat kesulitan, dan daftar materi lanjutan (Struktur Data dan Algoritma) yang ditandai "Akan Datang".
 
 ## Menjalankan
 
@@ -32,9 +32,17 @@ src/
   _data/bangun.js         versi build (nama cache) dan penanda mode dev
   js/tes.js               aturan penilaian latihan (dipakai worker dan `npm run uji`)
   js/pekerja.js           Web Worker: memuat runtime, menjalankan kode dan tes
-  index.njk               daftar pelajaran
+  index.njk               beranda: pelajaran dasar, tantangan, materi lanjutan
   pelajaran/*.md          satu berkas per pelajaran
+  tantangan/*.md          satu berkas per tantangan
+  _data/namaTingkat.json  nama kelima tingkat tantangan
+  _data/lanjutan.json     daftar materi lanjutan "Akan Datang"
+  _includes/tantangan.njk tata letak tantangan (dengan gerbang)
+  _includes/bagian/       potongan templat: latihan dan bilah tab
+  css/tanpa-js.css        dimuat hanya bila JavaScript mati
+  js/gerbang.js           memeriksa apakah halaman tantangan boleh dibuka
 skrip/cek-ukuran.js       pemeriksa anggaran ukuran
+skrip/python.js           menjalankan Python di Node (dipakai build dan penguji)
 skrip/uji-contoh.js       penguji contoh kode dan latihan di materi
 .github/workflows/        deploy ke GitHub Pages
 ```
@@ -72,6 +80,7 @@ Tiga hal yang perlu diingat saat menulis materi, karena kode dijalankan MicroPyt
 
 - Jangan membuat tes yang bergantung pada urutan `dict` atau `set`; pakai `sorted(...)`.
 - Hindari tes pada keluaran bilangan pecahan yang panjang; format `float` bisa berbeda dari CPython.
+- Irisan teks dengan langkah selain 1 (`teks[::-1]`) tidak didukung; untuk list didukung. Membalik teks: `"".join(reversed(teks))`.
 - Hindari `{{`, `{%`, dan `{#` di dalam berkas pelajaran: Markdown diproses Nunjucks lebih dulu. Blok `latihan` boleh dihilangkan.
 
 ### Format tes
@@ -87,6 +96,42 @@ Tes ditanam di halaman sebagai JSON (`<script type="application/json" data-tes>`
 Spasi di akhir baris diabaikan. Untuk `keluaran` dan `jumlah_baris`, baris kosong di akhir keluaran juga diabaikan.
 
 Kunci opsional `ganti` (misalnya `{ nilai: 60 }`) menjalankan ulang kode pelajar dengan baris `nilai = ...` diganti menjadi `nilai = 60`, agar jawaban yang hanya mencetak teks tidak lolos. Variabelnya harus ada di `kode_awal` sebagai penugasan tanpa indentasi. Bila pelajar menghapus atau mengganti nama variabel itu, tes gagal dengan pesan yang menjelaskannya.
+
+## Keluaran contoh di materi
+
+Setiap blok ```` ```python ```` di materi otomatis diikuti kotak **Keluaran**. Isinya tidak ditulis tangan: saat build, `eleventy.config.js` menjalankan kodenya dengan MicroPython yang sama seperti di browser, lalu menaruh hasilnya di bawah contoh. Karena itu keluaran yang dilihat pelajar selalu cocok dengan hasil sebenarnya, dan mengubah contoh otomatis mengubah keluarannya.
+
+- Blok ```` ```python salah ```` menampilkan galatnya dengan tanda merah.
+- Setiap contoh wajib mencetak sesuatu; `npm run uji` gagal bila ada contoh tanpa keluaran.
+- Blok berbahasa lain (misalnya ```` ```text ````) tidak dijalankan.
+
+## Tantangan
+
+Sepuluh tantangan di `src/tantangan/`, dua per tingkat: Sangat Mudah, Mudah, Normal, Sulit, Sangat Sulit. Formatnya sama dengan pelajaran, ditambah:
+
+```yaml
+tingkat: 3          # 1 = Sangat Mudah ... 5 = Sangat Sulit
+urutan: 1           # urutan di dalam tingkat itu
+petunjuk:           # opsional, ditampilkan terlipat di bawah soal
+  - Satu petunjuk per butir, boleh memakai `kode`.
+```
+
+Aturan kunci (ditentukan `statusTantangan` di `js/progres.js`):
+
+1. Materi pelajaran tidak pernah dikunci dan boleh dibuka dalam urutan apa pun.
+2. Tingkat pertama terbuka setelah semua latihan materi dasar selesai.
+3. Setiap tingkat berikutnya terbuka setelah semua tantangan di tingkat-tingkat sebelumnya selesai.
+4. Setelah semua tantangan pernah selesai, progres mencatat `bebas: true` dan semua tantangan terbuka tanpa syarat untuk seterusnya, termasuk bila nanti ditambah materi dasar baru.
+
+Di beranda, kartu tantangan yang terkunci tidak bisa diklik dan tingkatnya menampilkan alasannya. Halaman tantangan yang dibuka langsung lewat alamatnya menampilkan pesan terkunci beserta tautan ke yang harus diselesaikan dulu. Tanpa JavaScript gerbang tidak bisa diperiksa, jadi soal ditampilkan apa adanya.
+
+Kunci ini berjalan di browser pelajar, jadi bisa diakali oleh orang yang mengubah `localStorage`. Itu disengaja: tujuannya membimbing urutan belajar, bukan keamanan.
+
+Id progres tantangan adalah nama berkasnya dengan awalan `tantangan-` (misalnya `tantangan-05-palindrom`). Seperti pelajaran, mengganti nama berkas memutus progres pelajar untuk tantangan itu.
+
+## Materi lanjutan
+
+Topik di `src/_data/lanjutan.json` tampil di beranda sebagai kartu bertanda "Akan Datang", tanpa tautan. Saat sebuah topik sudah ditulis, buat pelajarannya dan hapus topik itu dari berkas ini.
 
 ## Cara kode dijalankan
 
@@ -184,10 +229,11 @@ Saat kontainer pelajaran lebih sempit dari 56rem, muncul tiga tab: Materi, Kode,
 
 ### Menguji materi
 
-`npm run uji` memeriksa dua hal pada MicroPython, runtime yang sama dengan di browser:
+`npm run uji` memeriksa pada MicroPython, runtime yang sama dengan di browser:
 
-1. Setiap blok ```` ```python ```` di `src/pelajaran/` berjalan tanpa galat. Blok yang memang sengaja salah ditulis ```` ```python salah ```` dan harus menghasilkan galat.
-2. Setiap latihan bisa diselesaikan: `solusi` lulus semua tes, dan `kode_awal` tidak.
+1. Setiap blok ```` ```python ```` di materi berjalan tanpa galat dan mencetak sesuatu. Blok yang memang sengaja salah ditulis ```` ```python salah ```` dan harus menghasilkan galat.
+2. Setiap latihan dan tantangan bisa diselesaikan: `solusi` lulus semua tes, dan `kode_awal` tidak.
+3. Setiap tantangan punya `tingkat` 1 sampai 5, dan setiap tingkat punya paling sedikit satu tantangan.
 
 Penilaiannya memakai `src/js/tes.js`, berkas yang sama dengan yang dipakai di browser. CI menjalankannya sebelum build. `npm run uji -- --tampil` menampilkan keluaran setiap contoh, berguna untuk memeriksa bahwa penjelasan di materi cocok dengan hasil sebenarnya.
 

@@ -1,0 +1,40 @@
+---
+layout: dasar.njk
+---
+{% set idProgres = "tantangan-" + page.fileSlug %}
+{% set sebelum = collections.tantanganUrut | getPreviousCollectionItem %}
+{% set sesudah = collections.tantanganUrut | getNextCollectionItem %}
+<div class="bungkus-pelajaran">
+  {% include "bagian/bilah-tab.njk" %}
+
+  {# Gerbang: js/gerbang.js memeriksa apakah tantangan ini sudah terbuka, lalu menampilkan soal atau pesan terkunci. #}
+  <div class="gerbang" data-gerbang data-id="{{ idProgres }}" data-beranda="{{ '/' | url }}">
+    <p class="status">Memeriksa apakah tantangan ini sudah terbuka…</p>
+  </div>
+
+  <div class="pelajaran" data-isi-tantangan hidden>
+    <article class="materi">
+      <p class="nomor">Tantangan · Tingkat {{ namaTingkat[tingkat - 1] }}</p>
+      <h1>{{ judul }}</h1>
+      {{ content | safe }}
+      {% if petunjuk %}
+      <details class="petunjuk">
+        <summary>Petunjuk</summary>
+        <ul>
+          {% for p in petunjuk %}<li>{{ p | mdInline | safe }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endif %}
+    </article>
+
+    {% include "bagian/latihan.njk" %}
+  </div>
+
+  <nav class="langkah" aria-label="Tantangan sebelum dan sesudah">
+    {% if sebelum %}<a rel="prev" href="{{ sebelum.url | url }}">← {{ sebelum.data.judul }}</a>{% else %}<a href="{{ '/' | url }}#tantangan">← Daftar tantangan</a>{% endif %}
+    {% if sesudah %}<a rel="next" href="{{ sesudah.url | url }}">{{ sesudah.data.judul }} →</a>{% endif %}
+  </nav>
+
+  <script type="application/json" data-peta-tantangan>{{ collections | petaTantangan(namaTingkat) | json | safe }}</script>
+</div>

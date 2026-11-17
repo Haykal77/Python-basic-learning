@@ -2,11 +2,14 @@
 // editor kode, dan tab untuk layar sempit.
 // Tanpa berkas ini halaman tetap utuh; tombol hanya muncul bila skrip ini berhasil jalan.
 import { baca, ubah } from "./progres.js";
+import { bukaGerbang, periksaBebas } from "./gerbang.js";
 
 const BATAS_WAKTU_MS = 5000;
 
 const akar = document.querySelector("[data-latihan]");
-if (akar && "Worker" in window) pasang(akar);
+// Di halaman tantangan, gerbang diperiksa dulu; latihan hanya dipasang bila tantangannya terbuka.
+const terbuka = bukaGerbang();
+if (terbuka && akar && "Worker" in window) pasang(akar);
 
 function pasang(akar) {
   const kotakKode = akar.querySelector("[data-kode]");
@@ -145,6 +148,7 @@ function pasang(akar) {
       if (hasilTes.every((t) => t.lulus)) {
         isi.push(elemen("p", "status lulus", "Semua tes lulus."));
         ubah(id, { selesai: true });
+        periksaBebas();
       }
     }
     hasil.hidden = false;

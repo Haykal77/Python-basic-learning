@@ -2,6 +2,17 @@
 // dipakai oleh Web Worker (js/pekerja.js) dan oleh penguji saat build (skrip/uji-contoh.js),
 // sehingga keduanya pasti menilai dengan aturan yang sama.
 
+// Traceback MicroPython menyebut berkas "<stdin>"; bagi pemula "kodemu" lebih jelas.
+// Dipakai untuk panel hasil latihan (js/pekerja.js) dan kotak keluaran contoh di materi (saat build).
+export function rapikanGalat(teks) {
+  return String(teks)
+    .trim()
+    .split("\n")
+    .filter((baris) => !/, in input$/.test(baris)) // bingkai milik pembuka di pekerja.js, bukan kode pelajar
+    .join("\n")
+    .replace(/File "<stdin>", line (\d+)(, in <module>)?/g, "Baris $1 di kodemu");
+}
+
 // JSON hampir sama dengan literal Python, kecuali true/false/null.
 export function literalPython(nilai) {
   if (nilai === true) return "True";

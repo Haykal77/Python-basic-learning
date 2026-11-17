@@ -1,24 +1,65 @@
 ---
 layout: dasar.njk
 ---
+{% set peta = collections | petaTantangan(namaTingkat) %}
 <div class="beranda">
   <h1>{{ situs.nama }}</h1>
   <p class="pembuka">{{ situs.deskripsi }}</p>
   <p class="progres" role="status" data-progres hidden></p>
 
-  <h2>Dasar-dasar Python</h2>
-  <p class="pembuka">Sebelas pelajaran ini mengikuti bagian <em>Learn the Basics</em> pada roadmap Python dari roadmap.sh, dari sintaks dasar sampai dictionary.</p>
+  <section class="kelompok" aria-labelledby="judul-dasar">
+    <h2 id="judul-dasar">Dasar-dasar Python</h2>
+    <p class="pembuka">Sebelas pelajaran ini mengikuti bagian <em>Learn the Basics</em> pada roadmap Python dari roadmap.sh, dari sintaks dasar sampai dictionary. Semua pelajaran boleh dibuka dalam urutan apa pun.</p>
 
-  <ol class="daftar-pelajaran">
-    {% for p in collections.pelajaranUrut %}
-    <li>
-      <a href="{{ p.url | url }}"{% if p.data.latihan %} data-id="{{ p.fileSlug }}"{% endif %}>
-        <span class="judul-kartu">{{ p.data.judul }}</span>
-        <span class="ringkasan-kartu">{{ p.data.ringkasan }}</span>
-      </a>
-    </li>
+    <ol class="daftar-pelajaran" data-daftar-dasar>
+      {% for p in collections.pelajaranUrut %}
+      <li>
+        <a class="kartu" href="{{ p.url | url }}"{% if p.data.latihan %} data-id="{{ p.fileSlug }}"{% endif %}>
+          <span class="judul-kartu">{{ p.data.judul }}</span>
+          <span class="ringkasan-kartu">{{ p.data.ringkasan }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="kelompok" id="tantangan" aria-labelledby="judul-tantangan">
+    <h2 id="judul-tantangan">Tantangan</h2>
+    <p class="pembuka">Soal untuk menguji kemampuanmu, dari Sangat Mudah sampai Sangat Sulit. Tantangan terbuka setelah semua latihan materi dasar selesai, dan setiap tingkat terbuka setelah semua tantangan di tingkat sebelumnya selesai. Setelah semua tantangan selesai, semuanya bisa dibuka kapan saja tanpa syarat.</p>
+    <p class="status" data-status-tantangan hidden></p>
+
+    {% for t in peta.tingkat %}
+    <div class="tingkat" data-tingkat="{{ loop.index0 }}">
+      <h3>{{ t.nama }} <span class="lencana" data-lencana hidden></span></h3>
+      <p class="status" data-alasan hidden></p>
+      <ol class="daftar-pelajaran">
+        {% for c in t.item %}
+        <li>
+          <a class="kartu" href="{{ c.url }}" data-id="{{ c.id }}">
+            <span class="judul-kartu">{{ c.judul }}</span>
+            <span class="ringkasan-kartu">{{ c.ringkasan }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
     {% endfor %}
-  </ol>
+  </section>
+
+  <section class="kelompok" aria-labelledby="judul-lanjutan">
+    <h2 id="judul-lanjutan">{{ lanjutan.judul }} <span class="lencana">Akan Datang</span></h2>
+    <p class="pembuka">{{ lanjutan.deskripsi }}</p>
+    <ul class="daftar-pelajaran akan-datang">
+      {% for t in lanjutan.topik %}
+      <li>
+        <div class="kartu" aria-disabled="true">
+          <span class="judul-kartu">{{ t.judul }} <span class="lencana">Akan Datang</span></span>
+          <span class="ringkasan-kartu">Roadmap: {{ t.roadmap }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
 
   {# Dihidupkan oleh js/beranda.js; tanpa skrip bagian ini tetap tersembunyi. #}
   <details class="kelola" data-kelola hidden>
@@ -32,4 +73,5 @@ layout: dasar.njk
     <p class="status" role="status" data-pesan></p>
   </details>
 </div>
+<script type="application/json" data-peta-tantangan>{{ peta | json | safe }}</script>
 <script type="module" src="{{ '/js/beranda.js' | url }}"></script>
