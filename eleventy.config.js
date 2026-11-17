@@ -34,7 +34,7 @@ export default function (eleventyConfig) {
       .sort((a, b) => a.data.urutan - b.data.urutan)
   );
 
-  // Tes latihan ditanam di halaman sebagai JSON untuk dipakai Fase 2 (Web Worker).
+  // Tes latihan ditanam di halaman sebagai JSON untuk dipakai Web Worker (js/pekerja.js).
   // "<" di-escape agar isi tes tidak bisa menutup tag <script>.
   eleventyConfig.addFilter("json", (nilai) =>
     JSON.stringify(nilai ?? null).replace(/</g, "\\u003c")

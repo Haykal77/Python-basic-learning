@@ -86,7 +86,7 @@ print(sorted(futsal.intersection(basket)))
 print(sorted(futsal.difference(basket)))
 ```
 
-| Metode | Operator | Hasil |
+| Metode | Nama operasi | Hasil |
 | --- | --- | --- |
 | `a.union(b)` | gabungan | Semua anggota `a` dan `b` |
 | `a.intersection(b)` | irisan | Yang ada di keduanya |

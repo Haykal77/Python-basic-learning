@@ -31,7 +31,9 @@ const INTI = [
 const RUNTIME = ["runtime/micropython.mjs", "runtime/micropython.wasm", "js/editor.js"];
 
 // Semua alamat relatif terhadap letak sw.js, sehingga situs boleh di-host di subfolder.
-const mutlak = (jalur) => new URL(jalur, self.location).href;
+// cache: "reload" melewati cache HTTP browser. Tanpa itu, versi baru service worker bisa mengisi
+// cache barunya dengan berkas lama yang masih tersimpan browser, dan berkas lama itu bertahan sampai deploy berikutnya.
+const mutlak = (jalur) => new Request(new URL(jalur, self.location).href, { cache: "reload" });
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
